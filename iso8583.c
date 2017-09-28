@@ -155,7 +155,7 @@ void GetFieldLen(FIELD_ATTR *eElementAttr, int *iFieldLen)
 {
 	if(eElementAttr->eElementAttr == Attr_n)
 	{
-		*iFieldLen = (*iFieldLen % 2) ? ((*iFieldLen/2 + 1) * 2):(*iFieldLen / 2);
+		*iFieldLen = (*iFieldLen % 2) ? ((*iFieldLen/2 + 1)):(*iFieldLen / 2);
 	}
 	else if(eElementAttr->eElementAttr == Attr_a || eElementAttr->eElementAttr == Attr_b )
 	{
