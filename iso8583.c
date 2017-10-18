@@ -6,6 +6,9 @@
 
 #include<stdio.h>
 #include<string.h>
+#include<fcntl.h>
+#include<sys/types.h>
+
 
 #define Attr_a			0
 #define Attr_b			1
@@ -16,6 +19,7 @@
 #define Attr_var1		0
 #define Attr_var2		1
 #define Attr_fix		2
+#define FILE_NAME		"pkgLog"
 	
 typedef struct _tagFIELD_ATTR
 {
@@ -175,22 +179,27 @@ int UnpackIso8583(void)
 	unsigned char bug8583Pkg[2048];
 	unsigned char bufTmp2[2048];
 	int iBufLen = 0;
+	int iFd;
+	int iFileLen = 0;
 
-	unsigned char *p = "00 9C 60 00 00 00 00 00 00 00 31 00 31 02 10 70"
-  					   "3E 00 81 0E D0 88 13 16 62 14 83 65 52 57 42 75"
-  					   "00 00 00 00 00 00 01 26 98 00 02 43 18 45 39 09"
-  					   "22 23 05 00 00 00 08 01 00 00 00 31 32 33 34 35"
-  					   "36 37 38 39 30 31 32 31 32 33 34 35 36 30 30 31"
-  					   "32 33 34 35 36 37 38 31 32 33 34 35 36 37 38 39"
-  					   "30 31 32 33 34 35 22 30 31 30 32 30 30 30 30 20"
-  					   "20 20 30 31 30 33 30 30 30 30 20 20 20 31 35 36" 
-  					   "20 00 00 00 00 00 00 00 00 14 22 00 00 01 00 05" 
-  					   "00 00 03 43 55 50 46 39 39 46 41 34 45 38";
+	iFd = open(FILE_NAME,O_RDWR ,0644);
+	if(iFd < 0){
+		printf("open file%s error\n",FILE_NAME);
+		return -1;
+	}
+	memset(bug8583Pkg,0,sizeof(bug8583Pkg));
+	iFileLen = read(iFd,bug8583Pkg,1024);
+	if(iFileLen < 0){
+		printf("read file %s error\n",FILE_NAME);
+		return -1;
+	}
+	printf("fileLen=%d\n",iFileLen);
+	close(iFd);
 	iCurrentLen += 2;
-    strcpy(bug8583Pkg,p);
 	for(i = 0;i < strlen(bug8583Pkg);i++)
 	{
-		if(bug8583Pkg[i] != ' ')
+		if(bug8583Pkg[i] != ' ' && bug8583Pkg[i] != '\t'
+		  && bug8583Pkg[i] != '\n' && bug8583Pkg[i] != '\r')
 		{
 			bufTmp2[iCount++] = bug8583Pkg[i];
 		}
@@ -201,7 +210,7 @@ int UnpackIso8583(void)
 		sprintf(bufTmp2 + i*3,"%02X ",bug8583Pkg[i]);
 	}
 	printf("ISO8583:=%s\n",bufTmp2);
-	printf("\nTotalLen=%02X(%03d)\n",iCount/2,iCount/2);
+	printf("\nTotalLen=0x%02X(%03d)\n",iCount/2,iCount/2);
 
 	/*TPDU*/
 	sprintf(bufTmp2,"[TPDU]=");
